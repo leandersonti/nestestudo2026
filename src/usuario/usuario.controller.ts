@@ -12,7 +12,7 @@ export class UsuarioController {
     }
 
     @Get()
-    async respostaUsuario(){
-        return "ta lendo"
+    async listaUsuarios(){
+        return this.usuarioRepository.listar();
     }
 }
