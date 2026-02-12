@@ -9,15 +9,28 @@ export class Preso {
   @ViewColumn()
   identificacao_acusado: string;
 
-  /*@ViewColumn()
-  nome: string;
-
   @ViewColumn()
   cpf: string;
 
   @ViewColumn()
-  status: string;
+  rg: string;
 
   @ViewColumn()
-  data_inclusao: Date;*/
+  processo: string;
+
+  @ViewColumn()
+  vara: string;
+
+  @ViewColumn()
+  cod_classe: Number;
+
+  @ViewColumn()
+  classe: string;
+
+  @ViewColumn()
+  situacao_processual: string;
+
+  @ViewColumn()
+  quantidade_de_reus: Number;
+
 }
