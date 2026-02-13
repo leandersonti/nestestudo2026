@@ -6,7 +6,7 @@ import { Preso } from './preso.entity';
 @Injectable()
 export class PresosService {
   constructor(
-    @InjectRepository(Preso)
+    @InjectRepository(Preso, 'postgres')
     private presosRepository: Repository<Preso>,
   ) {}
 
