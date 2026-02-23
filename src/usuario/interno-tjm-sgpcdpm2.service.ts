@@ -14,7 +14,7 @@ export class InternoTjmSgpcdpm2Service {
     return this.internoTjmRepository.find();
   }
 
-  async findById(id: number): Promise<InternoTjmViewSgpcdpm2 | null> {
+  /* async findById(id: number): Promise<InternoTjmViewSgpcdpm2 | null> {
     return this.internoTjmRepository.findOne({ where: { id } });
-  }
+  } */
 }

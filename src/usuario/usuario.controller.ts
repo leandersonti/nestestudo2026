@@ -5,6 +5,7 @@ import { InternoTjmService } from "./interno-tjm.service";
 import { InternoTjmIpatService } from "./interno-tjm-ipat.service";
 import { InternoTjmUppService } from "./interno-tjm-upp.service";
 import { InternoTjmSgpcdpm2Service } from "./interno-tjm-sgpcdpm2.service";
+import { InternoTjmMergeService } from './interno-tjm-merge.service';
 
 @Controller('/usuarios')
 export class UsuarioController {
@@ -17,6 +18,7 @@ export class UsuarioController {
         private internoTjmIpatService: InternoTjmIpatService,
         private internoTjmUppService: InternoTjmUppService,
         private internoTjmSgpcdpm2Service: InternoTjmSgpcdpm2Service,
+            private internoTjmMergeService: InternoTjmMergeService,
     ) {}
 
     @Post()
@@ -85,4 +87,9 @@ export class UsuarioController {
         this.usuarioRepository.deletar(dadosUsuario)
         return dadosUsuario;
     }*/
+
+    @Get('interno-tjm/merged')
+    async listaInternoTjmMerged() {
+        return this.internoTjmMergeService.findCommonByCpf();
+    }
 }

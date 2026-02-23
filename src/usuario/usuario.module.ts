@@ -11,6 +11,7 @@ import { InternoTjmUppService } from "./interno-tjm-upp.service";
 import { InternoTjmViewUpp } from "./interno-tjm-upp.entity";
 import { InternoTjmSgpcdpm2Service } from "./interno-tjm-sgpcdpm2.service";
 import { InternoTjmViewSgpcdpm2 } from "./interno-tjm-sgpcdpm2.entity";
+import { InternoTjmMergeService } from "./interno-tjm-merge.service";
 
 @Module({
     imports: [
@@ -21,7 +22,7 @@ import { InternoTjmViewSgpcdpm2 } from "./interno-tjm-sgpcdpm2.entity";
         TypeOrmModule.forFeature([InternoTjmViewSgpcdpm2], 'mysql-sgpcdpm2'),
     ],
     controllers: [UsuarioController],
-    providers: [PresosService, InternoTjmService, InternoTjmIpatService, InternoTjmUppService, InternoTjmSgpcdpm2Service]
+    providers: [PresosService, InternoTjmService, InternoTjmIpatService, InternoTjmUppService, InternoTjmSgpcdpm2Service, InternoTjmMergeService]
 })
 export class usuarioModule {
 

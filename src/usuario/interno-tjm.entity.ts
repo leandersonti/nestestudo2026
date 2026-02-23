@@ -9,10 +9,49 @@ import { ViewEntity, ViewColumn } from 'typeorm';
 export class InternoTjmView {
 
   @ViewColumn()
-  nome: string;
+  unidade: string;
 
   @ViewColumn()
-  unidade: string;
+  sexo: string;
+
+  @ViewColumn()
+  nacionalidade: string;
+
+  @ViewColumn()
+  mae: string;
+
+  @ViewColumn()
+  pai: string;
+
+  @ViewColumn()
+  rg: string;
+
+  @ViewColumn()
+  cpf: string;
+
+  @ViewColumn()
+  data_nascimento: string;
+
+  @ViewColumn()
+  naturalidade: string;
+
+  @ViewColumn()
+  orientacao: string;
+
+  @ViewColumn()
+  inicio_ciclo_mais_recente: string;
+
+  @ViewColumn()
+  data_detencao: string;
+
+  @ViewColumn()
+  local_detencao: string;
+
+  @ViewColumn()
+  forma_entrada: string;
+
+  @ViewColumn()
+  regime: string;
 
 
 }

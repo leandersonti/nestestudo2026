@@ -7,18 +7,52 @@ import { ViewEntity, ViewColumn } from 'typeorm';
   database: 'sgp',
 })
 export class InternoTjmViewSgpcdpm2 {
-  @ViewColumn()
-  id: number;
 
   @ViewColumn()
   nome: string;
 
   @ViewColumn()
-  descricao: string;
+  unidade: string;
 
   @ViewColumn()
-  data_criacao: Date;
+  sexo: string;
 
   @ViewColumn()
-  status: string;
+  nacionalidade: string;
+
+  @ViewColumn()
+  mae: string;
+
+  @ViewColumn()
+  pai: string;
+
+  @ViewColumn()
+  rg: string;
+
+  @ViewColumn()
+  cpf: string;
+
+  @ViewColumn()
+  data_nascimento: string;
+
+  @ViewColumn()
+  naturalidade: string;
+
+  @ViewColumn()
+  orientacao: string;
+
+  @ViewColumn()
+  inicio_ciclo_mais_recente: string;
+
+  @ViewColumn()
+  data_detencao: string;
+
+  @ViewColumn()
+  local_detencao: string;
+
+  @ViewColumn()
+  forma_entrada: string;
+
+  @ViewColumn()
+  regime: string;
 }
