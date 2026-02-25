@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param } from "@nestjs/common";
+import { Body, Controller, Get, Post, Param, Query } from "@nestjs/common";
 import { UsuarioRepository } from "./usuario.repository";
 import { PresosService } from "./presos.service";
 import { InternoTjmService } from "./interno-tjm.service";
@@ -6,6 +6,7 @@ import { InternoTjmIpatService } from "./interno-tjm-ipat.service";
 import { InternoTjmUppService } from "./interno-tjm-upp.service";
 import { InternoTjmSgpcdpm2Service } from "./interno-tjm-sgpcdpm2.service";
 import { InternoTjmMergeService } from './interno-tjm-merge.service';
+import { SiapService } from './siap.service';
 
 @Controller('/usuarios')
 export class UsuarioController {
@@ -19,6 +20,7 @@ export class UsuarioController {
         private internoTjmUppService: InternoTjmUppService,
         private internoTjmSgpcdpm2Service: InternoTjmSgpcdpm2Service,
             private internoTjmMergeService: InternoTjmMergeService,
+            private siapService: SiapService,
     ) {}
 
     @Post()
@@ -91,5 +93,36 @@ export class UsuarioController {
     @Get('interno-tjm/merged')
     async listaInternoTjmMerged() {
         return this.internoTjmMergeService.findCommonByCpf();
+    }
+
+    @Get('siap/unidades')
+    async getSiapUnidades() {
+        return this.siapService.getUnidades();
+    }
+
+    @Get('siap/siglas')
+    async getSiapSiglas() {
+        return this.siapService.listSiglasUnidades();
+    }
+
+    @Get('siap/listagem')
+    async getSiapListagem(@Query('nomeInterno') nomeInterno?: string) {
+        if (typeof nomeInterno === 'undefined' || nomeInterno === null || nomeInterno === '') {
+            return this.siapService.listagemAllUnidadesAllInternos();
+        }
+        const nome = nomeInterno || 'A';
+        return this.siapService.listagemForAllUnidades(nome);
+    }
+
+    @Get('listagem')
+    async getListagemAll(@Query('nomeInterno') nomeInterno?: string) {
+        const nome = nomeInterno || 'A';
+        return this.siapService.listagemForAllUnidades(nome);
+    }
+
+    // keep existing POST for compatibility
+    @Post('siap/listagem')
+    async postSiapListagem(@Body() filtro: any) {
+        return this.siapService.listagemFichaInternos(filtro || {});
     }
 }
