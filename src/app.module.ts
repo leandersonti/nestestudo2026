@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { usuarioModule } from './usuario/usuario.module';
+import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { usuarioModule } from './usuario/usuario.module';
       }),
     }),
     usuarioModule,
+    GoogleSheetsModule,
   ],
   controllers: [],
   providers: [],
