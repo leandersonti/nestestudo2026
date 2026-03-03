@@ -16,6 +16,9 @@ export class Preso {
   rg: string;
 
   @ViewColumn()
+  nomedamae: string;
+
+  @ViewColumn()
   processo: string;
 
   @ViewColumn()

@@ -73,6 +73,19 @@ export class GoogleSheetsService {
     }
   }
 
+  async getSheetDataByGid(
+    spreadsheetId: string,
+    gid: number,
+    skipRows: number = 2,
+  ): Promise<Record<string, any>[]> {
+    const metadata = await this.getSheetMetadata(spreadsheetId);
+    const sheet = metadata.sheets?.find((s) => s.sheetId === gid);
+    if (!sheet?.title) {
+      throw new Error(`Sheet with gid ${gid} not found`);
+    }
+    return this.getSheetData(spreadsheetId, sheet.title, skipRows);
+  }
+
   async getSheetMetadata(spreadsheetId: string) {
     if (!this.sheets) {
       throw new Error('Google Sheets API not initialized');

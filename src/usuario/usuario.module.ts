@@ -13,6 +13,7 @@ import { InternoTjmSgpcdpm2Service } from "./interno-tjm-sgpcdpm2.service";
 import { InternoTjmViewSgpcdpm2 } from "./interno-tjm-sgpcdpm2.entity";
 import { InternoTjmMergeService } from "./interno-tjm-merge.service";
 import { SiapService } from './siap.service';
+import { GoogleSheetsModule } from '../google-sheets/google-sheets.module';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { SiapService } from './siap.service';
         TypeOrmModule.forFeature([InternoTjmViewIpat], 'mysql-ipat'),
         TypeOrmModule.forFeature([InternoTjmViewUpp], 'mysql-upp'),
         TypeOrmModule.forFeature([InternoTjmViewSgpcdpm2], 'mysql-sgpcdpm2'),
+        GoogleSheetsModule,
     ],
     controllers: [UsuarioController],
     providers: [PresosService, InternoTjmService, InternoTjmIpatService, InternoTjmUppService, InternoTjmSgpcdpm2Service, InternoTjmMergeService, SiapService]
