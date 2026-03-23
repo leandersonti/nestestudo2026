@@ -72,7 +72,7 @@ export class SiapService {
           const payload: any = { nomeInterno };
           payload[key] = sigla;
           const r: any = await this.listagemFichaInternos(payload);
-          const data = (r && r.resultado) || r || [];
+          const data = this.extractArrayFromResponse(r);
           if (Array.isArray(data) && data.length > 0) {
             return { sigla, data };
           }
@@ -117,7 +117,16 @@ export class SiapService {
     }
 
     const siglas = unidades
-      .map((u: any) => u.siglaUnidade || u.SIGLA_UNIDADE || u.SiglaUnidade || u.sigla || u.sigla_unidade || u.SIGLAUNIDADE || u.SIGLA)
+      .map(
+        (u: any) =>
+          u.siglaUnidade ||
+          u.SIGLA_UNIDADE ||
+          u.SiglaUnidade ||
+          u.sigla ||
+          u.sigla_unidade ||
+          u.SIGLAUNIDADE ||
+          u.SIGLA,
+      )
       .filter(Boolean);
 
     const errors: any[] = [];
@@ -128,7 +137,7 @@ export class SiapService {
           const payload: any = {};
           payload[key] = sigla;
           const r: any = await this.listagemFichaInternos(payload);
-          const data = (r && r.resultado) || r || [];
+          const data = this.extractArrayFromResponse(r);
           if (Array.isArray(data) && data.length > 0) {
             return { sigla, data };
           }
@@ -142,13 +151,54 @@ export class SiapService {
     const results = await Promise.all(promises);
     const aggregated = results.reduce((acc: any[], item: any) => {
       if (item.data && Array.isArray(item.data)) {
-        const mapped = item.data.map((d: any) => ({ _siglaUnidade: item.sigla, ...d }));
+        const mapped = item.data.map((d: any) => ({
+          _siglaUnidade: item.sigla,
+          ...d,
+        }));
         return acc.concat(mapped);
       }
       return acc;
     }, []);
 
-    return { count: aggregated.length, items: aggregated, attempted: siglas.length, errors };
+    return {
+      count: aggregated.length,
+      items: aggregated,
+      attempted: siglas.length,
+      errors,
+    };
+  }
+
+  private extractArrayFromResponse(resp: any): any[] {
+    if (!resp) return [];
+
+    if (Array.isArray(resp)) {
+      return resp;
+    }
+
+    if (resp.resultado) {
+      if (Array.isArray(resp.resultado)) {
+        return resp.resultado;
+      }
+      if (resp.resultado && typeof resp.resultado === 'object') {
+        const nestedFromResultado = Object.values(resp.resultado).find(
+          (v: any) => Array.isArray(v) && v.length && typeof v[0] === 'object',
+        );
+        if (Array.isArray(nestedFromResultado)) {
+          return nestedFromResultado;
+        }
+      }
+    }
+
+    if (resp && typeof resp === 'object') {
+      const nested = Object.values(resp).find(
+        (v: any) => Array.isArray(v) && v.length && typeof v[0] === 'object',
+      );
+      if (Array.isArray(nested)) {
+        return nested;
+      }
+    }
+
+    return [];
   }
 
   async listSiglasUnidades(): Promise<string[]> {
