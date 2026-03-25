@@ -22,6 +22,9 @@ export class Preso {
   processo: string;
 
   @ViewColumn()
+  foro: string;
+
+  @ViewColumn()
   vara: string;
 
   @ViewColumn()

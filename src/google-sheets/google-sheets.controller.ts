@@ -32,6 +32,16 @@ export class GoogleSheetsController {
   ) {
     const id = spreadsheetId || this.defaultSpreadsheetId;
     const skip = skipRows ? parseInt(skipRows, 10) : 2;
-    return this.googleSheetsService.getSheetData(id, sheetName, skip);
+    const municipio = this.googleSheetsService.getMunicipioForSheet(sheetName);
+    const registros = await this.googleSheetsService.getSheetData(
+      id,
+      sheetName,
+      skip,
+    );
+    return {
+      municipio,
+      sheetName,
+      registros,
+    };
   }
 }

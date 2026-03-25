@@ -56,6 +56,7 @@ export class GoogleSheetsService {
       }
 
       const headers = rows[skipRows] as string[];
+      const municipio = this.resolveMunicipio(range);
       const data = rows.slice(skipRows + 1).map((row) => {
         const obj: Record<string, any> = {};
         headers.forEach((header, index) => {
@@ -63,6 +64,7 @@ export class GoogleSheetsService {
             obj[this.normalizeHeader(header)] = row[index] || null;
           }
         });
+        obj.municipio = municipio;
         return obj;
       });
 
@@ -98,12 +100,16 @@ export class GoogleSheetsService {
 
       return {
         title: response.data.properties?.title,
-        sheets: response.data.sheets?.map((sheet) => ({
-          sheetId: sheet.properties?.sheetId,
-          title: sheet.properties?.title,
-          rowCount: sheet.properties?.gridProperties?.rowCount,
-          columnCount: sheet.properties?.gridProperties?.columnCount,
-        })),
+        sheets: response.data.sheets?.map((sheet) => {
+          const title = sheet.properties?.title ?? '';
+          return {
+            sheetId: sheet.properties?.sheetId,
+            title,
+            municipio: this.resolveMunicipio(title),
+            rowCount: sheet.properties?.gridProperties?.rowCount,
+            columnCount: sheet.properties?.gridProperties?.columnCount,
+          };
+        }),
       };
     } catch (error) {
       this.logger.error(`Error fetching sheet metadata: ${error.message}`);
@@ -123,17 +129,54 @@ export class GoogleSheetsService {
 
     for (const sheet of metadata.sheets || []) {
       if (sheet.title) {
+        const municipio = this.resolveMunicipio(sheet.title);
         try {
-          const data = await this.getSheetData(spreadsheetId, sheet.title, skipRows);
-          result.sheets[sheet.title] = data;
+          const registros = await this.getSheetData(
+            spreadsheetId,
+            sheet.title,
+            skipRows,
+          );
+          result.sheets[sheet.title] = {
+            municipio,
+            registros,
+          };
         } catch (error) {
           this.logger.warn(`Could not fetch data from sheet: ${sheet.title}`);
-          result.sheets[sheet.title] = [];
+          result.sheets[sheet.title] = {
+            municipio,
+            registros: [],
+          };
         }
       }
     }
 
     return result;
+  }
+
+  /** Município associado à aba (via SHEETS_MUNICIPIO_MAP ou título da aba). */
+  getMunicipioForSheet(sheetTitle: string): string {
+    return this.resolveMunicipio(sheetTitle);
+  }
+
+  private resolveMunicipio(sheetTitle: string): string {
+    const map = this.getSheetTitleToMunicipioMap();
+    return map[sheetTitle] ?? sheetTitle;
+  }
+
+  private getSheetTitleToMunicipioMap(): Record<string, string> {
+    const raw = this.configService.get<string>('SHEETS_MUNICIPIO_MAP');
+    if (!raw?.trim()) {
+      return {};
+    }
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, string>;
+      }
+    } catch {
+      this.logger.warn('SHEETS_MUNICIPIO_MAP inválido; usando título da aba.');
+    }
+    return {};
   }
 
   private normalizeHeader(header: string): string {
