@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as https from 'https';
 import { google, sheets_v4 } from 'googleapis';
 
 @Injectable()
@@ -11,7 +12,25 @@ export class GoogleSheetsService {
     this.initializeGoogleSheets();
   }
 
+  /**
+   * When GOOGLE_SHEETS_TLS_INSECURE is true/1, skips TLS verification for Google Sheets HTTPS calls only.
+   * Use only behind corporate proxies; remove or set false before production.
+   */
+  private getGoogleSheetsClientOptions(): { agent?: https.Agent } {
+    const insecure = this.configService.get<string>('GOOGLE_SHEETS_TLS_INSECURE');
+    if (insecure !== 'true' && insecure !== '1') {
+      return {};
+    }
+    this.logger.warn(
+      'GOOGLE_SHEETS_TLS_INSECURE is on: TLS verification is disabled for Google Sheets API only.',
+    );
+    return {
+      agent: new https.Agent({ rejectUnauthorized: false }),
+    };
+  }
+
   private initializeGoogleSheets() {
+    const transport = this.getGoogleSheetsClientOptions();
     const credentials = this.configService.get<string>('GOOGLE_CREDENTIALS');
 
     if (credentials) {
@@ -20,12 +39,12 @@ export class GoogleSheetsService {
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
       });
 
-      this.sheets = google.sheets({ version: 'v4', auth });
+      this.sheets = google.sheets({ version: 'v4', auth, ...transport });
       this.logger.log('Google Sheets API initialized with service account');
     } else {
       const apiKey = this.configService.get<string>('GOOGLE_API_KEY');
       if (apiKey) {
-        this.sheets = google.sheets({ version: 'v4', auth: apiKey });
+        this.sheets = google.sheets({ version: 'v4', auth: apiKey, ...transport });
         this.logger.log('Google Sheets API initialized with API key');
       } else {
         this.logger.warn(
