@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import * as fs from 'fs';
+import * as https from 'https';
+import * as tls from 'tls';
 import { ConfigService } from '@nestjs/config';
 
 type ListagemAllInternosResult = {
@@ -20,9 +23,53 @@ export class SiapService {
     payload: ListagemAllInternosResult;
   } | null = null;
 
+  private httpsAgent: https.Agent | undefined;
+
   constructor(private configService: ConfigService) {
     this.baseUrl = this.configService.get<string>('SIAP_BASE_URL') || 'https://siap-am.com/SIAP5/APISIAP_GMF.rule?sys=WWW';
     this.apiToken = this.configService.get<string>('SIAP_API_TOKEN') || '';
+    this.httpsAgent = this.buildSiapHttpsAgent();
+  }
+
+  /** Aceita true/1/yes/on (case-insensitive), boolean, aspas no .env; fallback para process.env. */
+  private isSiapTlsInsecureEnabled(): boolean {
+    const raw =
+      this.configService.get<string | boolean>('SIAP_TLS_INSECURE') ??
+      process.env.SIAP_TLS_INSECURE;
+    if (raw === true) return true;
+    if (raw === false || raw === undefined || raw === null) return false;
+    const s = String(raw)
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .toLowerCase();
+    return ['true', '1', 'yes', 'on', 'y'].includes(s);
+  }
+
+  /**
+   * SIAP_TLS_CA_FILE: PEM (ex.: CA corporativa / inspeção SSL) mesclada às CAs raiz do Node.
+   * SIAP_TLS_INSECURE: desliga verificação TLS só para o SIAP (último recurso; dev/proxy).
+   */
+  private buildSiapHttpsAgent(): https.Agent | undefined {
+    const caPath = (this.configService.get<string>('SIAP_TLS_CA_FILE') || process.env.SIAP_TLS_CA_FILE || '')
+      .trim()
+      .replace(/^["']|["']$/g, '');
+    if (caPath) {
+      try {
+        const extra = fs.readFileSync(caPath);
+        const ca = [...tls.rootCertificates.map((c) => Buffer.from(c)), extra];
+        this.logger.log(`SIAP HTTPS: trust store estendido com SIAP_TLS_CA_FILE (${caPath})`);
+        return new https.Agent({ ca });
+      } catch (e: any) {
+        this.logger.error(`SIAP_TLS_CA_FILE ilegível: ${caPath} — ${e?.message ?? e}`);
+      }
+    }
+
+    if (this.isSiapTlsInsecureEnabled()) {
+      this.logger.warn('SIAP_TLS_INSECURE ativo: verificação TLS desativada nas chamadas ao SIAP.');
+      return new https.Agent({ rejectUnauthorized: false });
+    }
+
+    return undefined;
   }
 
   async callRecurso(recurso: string, body: Record<string, any> = {}) {
@@ -30,6 +77,7 @@ export class SiapService {
     const resp = await axios.post(this.baseUrl, payload, {
       headers: { 'Content-Type': 'application/json' },
       timeout: 60000,
+      ...(this.httpsAgent ? { httpsAgent: this.httpsAgent } : {}),
     });
     return resp.data;
   }
